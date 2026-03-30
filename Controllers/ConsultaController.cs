@@ -12,13 +12,29 @@ namespace OficinaWeb.Controllers
         private readonly ClienteDAO _clienteDAO;
         private readonly CarroDAO _carroDAO;
         private readonly OficinaDAO _oficinaDAO;
+        private readonly IWebHostEnvironment _env;
 
-        public ConsultaController(IConfiguration config)
+        private static readonly string[] _extsLogo = { ".png", ".jpg", ".jpeg", ".gif", ".webp" };
+
+        public ConsultaController(IConfiguration config, IWebHostEnvironment env)
         {
             _osDAO = new OrdemServicoDAO(config);
             _clienteDAO = new ClienteDAO(config);
             _carroDAO = new CarroDAO(config);
             _oficinaDAO = new OficinaDAO(config);
+            _env = env;
+        }
+
+        private string EncontrarLogoUrl()
+        {
+            var imgDir = Path.Combine(_env.WebRootPath, "img");
+            if (!Directory.Exists(imgDir)) return "";
+            foreach (var e in _extsLogo)
+            {
+                if (System.IO.File.Exists(Path.Combine(imgDir, "logo_oficina" + e)))
+                    return "/img/logo_oficina" + e;
+            }
+            return "";
         }
 
         public IActionResult Index()
@@ -147,13 +163,13 @@ namespace OficinaWeb.Controllers
             if (oficina != null)
             {
                 vm.NomeFantasia = oficina.NomeFantasia;
-                vm.Cnpj = oficina.Cnpj;
                 vm.Endereco = oficina.Endereco;
                 vm.Numero = oficina.Numero.ToString();
                 vm.Bairro = oficina.Bairro;
                 vm.Cidade = oficina.Cidade;
                 vm.Telefone1 = oficina.Telefone1;
             }
+            vm.LogoUrl = EncontrarLogoUrl();
 
             return View(vm);
         }

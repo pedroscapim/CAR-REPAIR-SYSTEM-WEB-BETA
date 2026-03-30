@@ -7,8 +7,11 @@
 
 <div class="card">
     <div class="card-body">
-        <form asp-action="Index" method="post">
-            <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+        <form asp-action="Index" method="post" enctype="multipart/form-data">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+            }
 
             <div class="row g-3">
                 <div class="col-md-6">
@@ -19,11 +22,6 @@
                 <div class="col-md-6">
                     <label asp-for="RazaoSocial" class="form-label">Razão Social</label>
                     <input asp-for="RazaoSocial" class="form-control" />
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="Cnpj" class="form-label">CNPJ *</label>
-                    <input asp-for="Cnpj" class="form-control" placeholder="00.000.000/0001-00" />
-                    <span asp-validation-for="Cnpj" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
                     <label asp-for="Telefone1" class="form-label">Telefone 1</label>
@@ -61,6 +59,48 @@
                 </div>
             </div>
 
+            <!-- Logo / Emblema -->
+            <hr class="my-4" />
+            <h6 class="mb-3">🖼️ Logo / Emblema da Oficina</h6>
+            <div class="row g-3 align-items-start">
+                <div class="col-md-3 text-center">
+                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                    {
+                        <div class="border rounded p-2 mb-2 d-inline-block" style="background:#f8f9fa;">
+                            <img id="previewLogo" src="@Model.LogoUrl" alt="Logo atual"
+                                 style="max-width:180px; max-height:80px; object-fit:contain; display:block;" />
+                        </div>
+                        <div class="small text-muted mb-2">Logo atual</div>
+                    }
+                    else
+                    {
+                        <div class="border rounded p-3 mb-2 text-muted small" id="semLogo"
+                             style="width:180px; height:90px; display:flex; align-items:center; justify-content:center; background:#f8f9fa;">
+                            Sem logo
+                        </div>
+                        <img id="previewLogo" src="" alt="" style="max-width:180px; max-height:80px; object-fit:contain; display:none;" />
+                    }
+                </div>
+                <div class="col-md-9">
+                    <label class="form-label">Enviar nova imagem</label>
+                    <input type="file" name="logoFile" id="inputLogo" class="form-control" accept=".png,.jpg,.jpeg,.gif,.webp" />
+                    <div class="form-text">
+                        Formatos aceitos: PNG, JPG, GIF, WEBP — máx. 2 MB.<br />
+                        Na impressão, o logo será exibido com largura máxima de <strong>180 px</strong> e altura máxima de <strong>80 px</strong>, mantendo proporção.
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                    {
+                        <form asp-action="RemoverLogo" method="post" class="d-inline mt-2">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger btn-sm mt-2"
+                                    onclick="return confirm('Remover o logo atual?')">
+                                🗑️ Remover logo atual
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">Salvar</button>
             </div>
@@ -68,8 +108,145 @@
     </div>
 </div>
 
+<!-- ── Seção de Usuários ──────────────────────────────────── -->
+<div class="card mt-4" id="secUsuarios">
+    <div class="card-header fw-semibold">👤 Usuários do Sistema</div>
+    <div class="card-body">
+
+        @if (TempData["Erro"] != null)
+        {
+            <div class="alert alert-danger py-2 small">@TempData["Erro"]</div>
+        }
+
+        <!-- Cadastrar novo usuário -->
+        <h6 class="mb-3">Cadastrar novo usuário</h6>
+        <form asp-action="CriarUsuario" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label form-label-sm">Nome</label>
+                    <input type="text" name="Nome" class="form-control form-control-sm" placeholder="Nome completo" required />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label form-label-sm">Usuário (login)</label>
+                    <input type="text" name="Username" class="form-control form-control-sm" placeholder="Ex: admin" required autocomplete="off" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label form-label-sm">Senha</label>
+                    <input type="password" name="Senha" class="form-control form-control-sm" placeholder="Senha" required autocomplete="new-password" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-success btn-sm w-100">+ Cadastrar</button>
+                </div>
+            </div>
+        </form>
+
+        <hr class="my-3" />
+
+        <!-- Lista de usuários -->
+        <h6 class="mb-2">Usuários cadastrados</h6>
+        @{
+            var usuarios = ViewBag.Usuarios as List<OficinaWeb.Models.UsuarioListaViewModel> ?? new();
+        }
+        @if (!usuarios.Any())
+        {
+            <p class="text-muted small">Nenhum usuário cadastrado.</p>
+        }
+        else
+        {
+            <table class="table table-sm table-bordered table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Nome</th>
+                        <th>Usuário (login)</th>
+                        <th style="width:130px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in usuarios)
+                    {
+                        <tr>
+                            <td class="text-muted small">@u.Id</td>
+                            <td>@u.Nome</td>
+                            <td><code>@u.Username</code></td>
+                            <td>
+                                <button class="btn btn-outline-secondary btn-sm me-1"
+                                        onclick="abrirEditar(@u.Id, '@Html.Raw(u.Nome.Replace("'","\\\'"))', '@u.Username')">
+                                    ✏️ Alterar
+                                </button>
+                                <form method="post" asp-action="ExcluirUsuario" style="display:inline"
+                                      onsubmit="return confirm('Excluir o usuário @u.Username?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@u.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<!-- Modal Alterar Usuário -->
+<div class="modal fade" id="modalAlterar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AlterarUsuario" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="editId" />
+                <div class="modal-header">
+                    <h6 class="modal-title">✏️ Alterar Usuário</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" name="Nome" id="editNome" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Usuário (login)</label>
+                        <input type="text" name="Username" id="editUsername" class="form-control" required autocomplete="off" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nova senha <span class="text-muted small">(deixe vazio para não alterar)</span></label>
+                        <input type="password" name="NovaSenha" id="editSenha" class="form-control" autocomplete="new-password" placeholder="Nova senha (opcional)" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
+    function abrirEditar(id, nome, username) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editNome').value = nome;
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editSenha').value = '';
+        new bootstrap.Modal(document.getElementById('modalAlterar')).show();
+    }
+
+    // Preview ao selecionar nova imagem
+    $('#inputLogo').on('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#previewLogo').attr('src', e.target.result).show();
+            $('#semLogo').hide();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // CEP auto-fill
     $('#inputCep').on('blur', function () {
         var cep = $(this).val().replace(/\D/g, '');
         if (cep.length !== 8) return;

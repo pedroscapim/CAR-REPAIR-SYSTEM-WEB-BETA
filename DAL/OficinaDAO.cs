@@ -17,7 +17,7 @@ namespace OficinaWeb.DAL
             using var con = new SqlConnection(_connectionString);
             con.Open();
             var cmd = new SqlCommand(
-                "SELECT TOP 1 IDOFICINA, NOMEFANTASIA, RAZAOSOCIAL, CNPJ, TELEFONE1, TELEFONE2, CEP, ENDERECO, BAIRRO, NUMERO, CIDADE FROM OFICINA", con);
+                "SELECT TOP 1 IDOFICINA, NOMEFANTASIA, RAZAOSOCIAL, TELEFONE1, TELEFONE2, CEP, ENDERECO, BAIRRO, NUMERO, CIDADE FROM OFICINA", con);
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
             {
@@ -26,14 +26,13 @@ namespace OficinaWeb.DAL
                     Id = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
                     NomeFantasia = reader.IsDBNull(1) ? "" : reader.GetString(1),
                     RazaoSocial = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                    Cnpj = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                    Telefone1 = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                    Telefone2 = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                    Cep = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                    Endereco = reader.IsDBNull(7) ? "" : reader.GetString(7),
-                    Bairro = reader.IsDBNull(8) ? "" : reader.GetString(8),
-                    Numero = reader.IsDBNull(9) ? 0 : reader.GetInt32(9),
-                    Cidade = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                    Telefone1 = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    Telefone2 = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    Cep = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                    Endereco = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                    Bairro = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                    Numero = reader.IsDBNull(8) ? 0 : reader.GetInt32(8),
+                    Cidade = reader.IsDBNull(9) ? "" : reader.GetString(9),
                 };
             }
             return null;
@@ -52,11 +51,10 @@ namespace OficinaWeb.DAL
             using var con = new SqlConnection(_connectionString);
             con.Open();
             var cmd = new SqlCommand(
-                "INSERT INTO OFICINA (NOMEFANTASIA, RAZAOSOCIAL, CNPJ, TELEFONE1, TELEFONE2, CEP, ENDERECO, BAIRRO, NUMERO, CIDADE) " +
-                "VALUES (@NF, @RS, @CNPJ, @T1, @T2, @CEP, @END, @BAI, @NUM, @CID)", con);
+                "INSERT INTO OFICINA (NOMEFANTASIA, RAZAOSOCIAL, TELEFONE1, TELEFONE2, CEP, ENDERECO, BAIRRO, NUMERO, CIDADE) " +
+                "VALUES (@NF, @RS, @T1, @T2, @CEP, @END, @BAI, @NUM, @CID)", con);
             cmd.Parameters.AddWithValue("@NF", obj.NomeFantasia);
             cmd.Parameters.AddWithValue("@RS", obj.RazaoSocial ?? "");
-            cmd.Parameters.AddWithValue("@CNPJ", obj.Cnpj);
             cmd.Parameters.AddWithValue("@T1", obj.Telefone1 ?? "");
             cmd.Parameters.AddWithValue("@T2", obj.Telefone2 ?? "");
             cmd.Parameters.AddWithValue("@CEP", obj.Cep ?? "");
@@ -72,11 +70,10 @@ namespace OficinaWeb.DAL
             using var con = new SqlConnection(_connectionString);
             con.Open();
             var cmd = new SqlCommand(
-                "UPDATE OFICINA SET NOMEFANTASIA=@NF, RAZAOSOCIAL=@RS, CNPJ=@CNPJ, TELEFONE1=@T1, TELEFONE2=@T2, " +
+                "UPDATE OFICINA SET NOMEFANTASIA=@NF, RAZAOSOCIAL=@RS, TELEFONE1=@T1, TELEFONE2=@T2, " +
                 "CEP=@CEP, ENDERECO=@END, BAIRRO=@BAI, NUMERO=@NUM, CIDADE=@CID", con);
             cmd.Parameters.AddWithValue("@NF", obj.NomeFantasia);
             cmd.Parameters.AddWithValue("@RS", obj.RazaoSocial ?? "");
-            cmd.Parameters.AddWithValue("@CNPJ", obj.Cnpj);
             cmd.Parameters.AddWithValue("@T1", obj.Telefone1 ?? "");
             cmd.Parameters.AddWithValue("@T2", obj.Telefone2 ?? "");
             cmd.Parameters.AddWithValue("@CEP", obj.Cep ?? "");

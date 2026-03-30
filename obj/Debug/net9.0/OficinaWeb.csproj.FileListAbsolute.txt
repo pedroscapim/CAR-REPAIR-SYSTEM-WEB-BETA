@@ -138,3 +138,4 @@ C:\Users\pedro\Downloads\OficinaWeb\obj\Debug\net9.0\refint\OficinaWeb.dll
 C:\Users\pedro\Downloads\OficinaWeb\obj\Debug\net9.0\OficinaWeb.pdb
 C:\Users\pedro\Downloads\OficinaWeb\obj\Debug\net9.0\OficinaWeb.genruntimeconfig.cache
 C:\Users\pedro\Downloads\OficinaWeb\obj\Debug\net9.0\ref\OficinaWeb.dll
+C:\Users\pedro\Downloads\OficinaWeb\obj\Debug\net9.0\OficinaWeb.sourcelink.json
