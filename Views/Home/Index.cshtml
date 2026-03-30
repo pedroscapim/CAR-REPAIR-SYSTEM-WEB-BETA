@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">📊 Dashboard</h4>
+</div>
+
+<!-- Filtro de período -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label mb-1 small">De</label>
+                <input type="date" id="filtroInicio" class="form-control form-control-sm" />
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-1 small">Até</label>
+                <input type="date" id="filtroFim" class="form-control form-control-sm" />
+            </div>
+            <div class="col-auto">
+                <button id="btnFiltrar" class="btn btn-primary btn-sm">Filtrar</button>
+                <button id="btnAnoAtual" class="btn btn-outline-secondary btn-sm ms-1">Ano atual</button>
+                <button id="btnMesAtual" class="btn btn-outline-secondary btn-sm ms-1">Mês atual</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cards de resumo -->
+<div class="row g-3 mb-3" id="cardsResumo">
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Ordens de Serviço</div>
+            <div class="fs-3 fw-bold" id="resQtdOS">—</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Receita Mão de Obra</div>
+            <div class="fs-5 fw-bold text-success" id="resMaoDeObra">—</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Gasto em Peças</div>
+            <div class="fs-5 fw-bold text-warning" id="resPecas">—</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="text-muted small">Total Geral</div>
+            <div class="fs-5 fw-bold text-primary" id="resTotal">—</div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-semibold">💰 Receita de Mão de Obra (R$)</div>
+            <div class="card-body">
+                <canvas id="chartMaoDeObra" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-semibold">🔩 Gasto em Peças (R$)</div>
+            <div class="card-body">
+                <canvas id="chartPecas" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    var chartMdo, chartPecas;
+
+    function fmt(v) { return 'R$ ' + parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 }); }
+
+    function inicializarGraficos() {
+        var ctxMdo = document.getElementById('chartMaoDeObra').getContext('2d');
+        chartMdo = new Chart(ctxMdo, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Mão de Obra', data: [], backgroundColor: 'rgba(15,52,96,0.75)', borderRadius: 4 }] },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => fmt(ctx.raw) } } },
+                scales: { y: { ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } }
+            }
+        });
+        var ctxPec = document.getElementById('chartPecas').getContext('2d');
+        chartPecas = new Chart(ctxPec, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Peças', data: [], backgroundColor: 'rgba(255,165,0,0.75)', borderRadius: 4 }] },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => fmt(ctx.raw) } } },
+                scales: { y: { ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } }
+            }
+        });
+    }
+
+    function carregarDados() {
+        var inicio = $('#filtroInicio').val();
+        var fim = $('#filtroFim').val();
+        $.get('/Home/DadosDashboard', { dataInicio: inicio, dataFim: fim }, function (d) {
+            // Atualiza cards
+            $('#resQtdOS').text(d.resumo.qtdOS);
+            $('#resMaoDeObra').text(fmt(d.resumo.totalMaoDeObra));
+            $('#resPecas').text(fmt(d.resumo.totalPecas));
+            $('#resTotal').text(fmt(d.resumo.totalGeral));
+
+            // Atualiza gráficos
+            chartMdo.data.labels = d.labels;
+            chartMdo.data.datasets[0].data = d.maoDeObra;
+            chartMdo.update();
+
+            chartPecas.data.labels = d.labels;
+            chartPecas.data.datasets[0].data = d.pecas;
+            chartPecas.update();
+        });
+    }
+
+    function setAnoAtual() {
+        var hoje = new Date();
+        $('#filtroInicio').val(hoje.getFullYear() + '-01-01');
+        $('#filtroFim').val(hoje.toISOString().slice(0, 10));
+    }
+
+    function setMesAtual() {
+        var hoje = new Date();
+        var m = String(hoje.getMonth() + 1).padStart(2, '0');
+        $('#filtroInicio').val(hoje.getFullYear() + '-' + m + '-01');
+        $('#filtroFim').val(hoje.toISOString().slice(0, 10));
+    }
+
+    $(function () {
+        inicializarGraficos();
+        setAnoAtual();
+        carregarDados();
+
+        $('#btnFiltrar').click(carregarDados);
+        $('#btnAnoAtual').click(function () { setAnoAtual(); carregarDados(); });
+        $('#btnMesAtual').click(function () { setMesAtual(); carregarDados(); });
+    });
+</script>
+}

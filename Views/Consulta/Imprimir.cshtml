@@ -1,0 +1,123 @@
+@model OficinaWeb.Models.OSImpressaoViewModel
+@{
+    ViewData["Title"] = $"O.S. Nº {Model.OsId}";
+    Layout = "_PrintLayout";
+}
+
+<!-- Cabeçalho da Oficina -->
+<div class="print-header">
+    <div class="print-title">@Model.NomeFantasia</div>
+    @if (!string.IsNullOrEmpty(Model.Cnpj))
+    {
+        <div>CNPJ: @Model.Cnpj</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Endereco))
+    {
+        <div>@Model.Endereco@(string.IsNullOrEmpty(Model.Numero) ? "" : ", " + Model.Numero) — @Model.Bairro — @Model.Cidade</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Telefone1))
+    {
+        <div>Tel: @Model.Telefone1</div>
+    }
+</div>
+
+<!-- Título da OS -->
+<div class="text-center mb-3">
+    <span style="font-size:16px; font-weight:bold;">ORDEM DE SERVIÇO Nº @Model.OsId</span>
+</div>
+
+<!-- Dados do Cliente / Veículo -->
+<div class="row mb-3">
+    <div class="col-6">
+        <strong>Cliente:</strong> @Model.NomeCliente<br />
+        <strong>Telefone:</strong> @Model.Telefone
+    </div>
+    <div class="col-6">
+        <strong>Veículo:</strong> @Model.Modelo — @Model.Placa<br />
+        <strong>Data abertura:</strong> @Model.DataAbertura &nbsp;&nbsp;
+        <strong>KM:</strong> @Model.KmAtual
+    </div>
+</div>
+
+<!-- Peças -->
+@if (Model.Pecas.Any())
+{
+    <div class="section-title">PEÇAS UTILIZADAS</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Peça</th>
+                <th style="width:60px; text-align:center;">Qtd</th>
+                <th style="width:100px; text-align:right;">Valor Unit.</th>
+                <th style="width:100px; text-align:right;">Valor Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.Pecas)
+            {
+                <tr>
+                    <td>@p.Nome</td>
+                    <td style="text-align:center;">@p.Quantidade</td>
+                    <td style="text-align:right;">R$ @p.ValorUnitario.ToString("N2")</td>
+                    <td style="text-align:right;">R$ @p.ValorTotal.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- Serviços -->
+@if (Model.Servicos.Any())
+{
+    <div class="section-title">SERVIÇOS REALIZADOS</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th style="width:80px; text-align:center;">Tempo</th>
+                <th style="width:100px; text-align:right;">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model.Servicos)
+            {
+                <tr>
+                    <td>@s.Descricao</td>
+                    <td style="text-align:center;">@s.TempoGasto</td>
+                    <td style="text-align:right;">R$ @s.Valor.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- Totais -->
+<div class="totais mt-3">
+    <table style="width:300px; margin-left:auto; border:none;">
+        <tr>
+            <td style="border:none; padding:3px 8px;">Total Peças:</td>
+            <td style="border:none; padding:3px 8px; text-align:right;">R$ @Model.TotalPecas.ToString("N2")</td>
+        </tr>
+        <tr>
+            <td style="border:none; padding:3px 8px;">Total Serviços:</td>
+            <td style="border:none; padding:3px 8px; text-align:right;">R$ @Model.TotalServicos.ToString("N2")</td>
+        </tr>
+        <tr style="border-top: 2px solid #000;">
+            <td style="border:none; padding:5px 8px;" class="total-final">TOTAL GERAL:</td>
+            <td style="border:none; padding:5px 8px; text-align:right;" class="total-final">R$ @Model.Total.ToString("N2")</td>
+        </tr>
+    </table>
+</div>
+
+<!-- Assinatura -->
+<div class="mt-5 pt-3" style="border-top: 1px solid #ccc;">
+    <div class="row text-center">
+        <div class="col-5">
+            <div style="border-top:1px solid #000; margin-top:40px; padding-top:4px;">Assinatura do Cliente</div>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-5">
+            <div style="border-top:1px solid #000; margin-top:40px; padding-top:4px;">Assinatura do Responsável</div>
+        </div>
+    </div>
+</div>

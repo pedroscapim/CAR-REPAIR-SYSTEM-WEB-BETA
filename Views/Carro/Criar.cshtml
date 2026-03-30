@@ -1,0 +1,55 @@
+@model OficinaWeb.Models.CarroViewModel
+@{
+    ViewData["Title"] = "Novo Veículo";
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-2">← Voltar</a>
+    <h4 class="mb-0">🚗 Novo Veículo</h4>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Criar" method="post">
+            <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label asp-for="ClienteId" class="form-label">Cliente *</label>
+                    <select asp-for="ClienteId" class="form-select"
+                            asp-items="@(new SelectList(ViewBag.Clientes as List<OficinaWeb.Models.ClienteViewModel>, "Id", "Nome"))">
+                        <option value="">Selecione o cliente...</option>
+                    </select>
+                    <span asp-validation-for="ClienteId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Modelo" class="form-label">Modelo *</label>
+                    <input asp-for="Modelo" class="form-control" placeholder="Ex: Honda Civic" />
+                    <span asp-validation-for="Modelo" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Placa" class="form-label">Placa *</label>
+                    <input asp-for="Placa" class="form-control" placeholder="Ex: ABC-1234" />
+                    <span asp-validation-for="Placa" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="AnoFabricacao" class="form-label">Ano</label>
+                    <input asp-for="AnoFabricacao" class="form-control" placeholder="Ex: 2020" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Cor" class="form-label">Cor</label>
+                    <input asp-for="Cor" class="form-control" placeholder="Ex: Prata" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Km" class="form-label">KM atual</label>
+                    <input asp-for="Km" class="form-control" placeholder="Ex: 50000" />
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

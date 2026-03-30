@@ -1,0 +1,294 @@
+@model OficinaWeb.Models.OrcamentoViewModel
+@{
+    ViewData["Title"] = "Nova Ordem de Serviço";
+}
+
+<h4 class="mb-3">📋 Nova Ordem de Serviço</h4>
+
+<div class="row">
+    <!-- PAINEL SUPERIOR: Cliente, Veiculo, Data, KM -->
+    <div class="col-12 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Cliente *</label>
+                        <select id="selCliente" class="form-select">
+                            <option value="">Selecione...</option>
+                            @foreach (var c in (ViewBag.Clientes as List<OficinaWeb.Models.ClienteViewModel>) ?? new())
+                            {
+                                <option value="@c.Id">@c.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Veículo *</label>
+                        <select id="selCarro" class="form-select">
+                            <option value="">Selecione um cliente primeiro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Data abertura *</label>
+                        <input type="date" id="txtData" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">KM atual *</label>
+                        <input type="text" id="txtKm" class="form-control" placeholder="Ex: 52000" />
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" id="btnAbrirOS" class="btn btn-primary w-100">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAINEL DE PEÇAS E SERVIÇOS (desabilitado até clicar OK) -->
+    <div class="col-12" id="pnlOS" style="display:none;">
+        <div class="row">
+            <!-- Peças -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">🔩 Peças</div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-5">
+                                <input type="text" id="txtPeca" class="form-control form-control-sm" placeholder="Nome da peça" />
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" id="txtQtd" class="form-control form-control-sm" placeholder="Qtd" min="1" value="1" />
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" id="txtValorUni" class="form-control form-control-sm" placeholder="Valor R$" step="0.01" />
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" id="btnAddPeca" class="btn btn-success btn-sm w-100">+</button>
+                            </div>
+                        </div>
+                        <table class="table table-sm table-bordered" id="tblPecas">
+                            <thead class="table-light"><tr><th>Peça</th><th>Qtd</th><th>Uni</th><th>Total</th><th></th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Serviços -->
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">🔧 Serviços</div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <input type="text" id="txtServico" class="form-control form-control-sm" placeholder="Descrição do serviço" />
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <input type="number" id="txtTempo" class="form-control" placeholder="Tempo" min="0" step="0.5" />
+                                    <select id="selUnidadeTempo" class="form-select" style="max-width:65px;">
+                                        <option value="Hr">Hr</option>
+                                        <option value="Min">Min</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" id="txtValorHora" class="form-control form-control-sm" placeholder="R$/h" step="0.01" title="Valor por hora" />
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" id="txtTotalServico" class="form-control form-control-sm bg-light" placeholder="Total" readonly />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" id="btnAddServico" class="btn btn-success btn-sm w-100">+</button>
+                            </div>
+                        </div>
+                        <table class="table table-sm table-bordered" id="tblServicos">
+                            <thead class="table-light"><tr><th>Serviço</th><th>Tempo</th><th>Valor</th><th></th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Totais e Finalizar -->
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <span class="text-muted">Total Peças: </span>
+                        <strong id="lblTotalPecas">R$ 0,00</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="text-muted">Total Serviços: </span>
+                        <strong id="lblTotalServicos">R$ 0,00</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="text-muted">Total Geral: </span>
+                        <strong id="lblTotal" class="fs-5 text-success">R$ 0,00</strong>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <button type="button" id="btnFinalizar" class="btn btn-primary px-4">Finalizar O.S.</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal resultado -->
+<div class="modal fade" id="modalSucesso" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">✅ Ordem de Serviço</h5>
+            </div>
+            <div class="modal-body" id="modalMensagem"></div>
+            <div class="modal-footer">
+                <button type="button" id="btnImprimirOS" class="btn btn-outline-primary">🖨️ Imprimir O.S.</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="resetarFormulario()">Nova O.S.</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Carregar carros ao selecionar cliente
+    $('#selCliente').change(function () {
+        var clienteId = $(this).val();
+        $('#selCarro').html('<option value="">Carregando...</option>');
+        if (!clienteId) { $('#selCarro').html('<option value="">Selecione um cliente primeiro</option>'); return; }
+        $.get('/Carro/ListarPorCliente?clienteId=' + clienteId, function (data) {
+            var opts = '<option value="">Selecione...</option>';
+            data.forEach(function (c) { opts += `<option value="${c.value}">${c.text}</option>`; });
+            $('#selCarro').html(opts);
+        });
+    });
+
+    // Habilitar painel OS
+    $('#btnAbrirOS').click(function () {
+        if (!$('#selCliente').val()) { alert('Selecione um cliente.'); return; }
+        if (!$('#selCarro').val()) { alert('Selecione um veículo.'); return; }
+        if (!$('#txtData').val()) { alert('Informe a data.'); return; }
+        if (!$('#txtKm').val()) { alert('Informe a KM atual.'); return; }
+        $('#pnlOS').show();
+    });
+
+    // Adicionar peça
+    $('#btnAddPeca').click(function () {
+        var nome = $('#txtPeca').val().trim();
+        var qtd = parseInt($('#txtQtd').val()) || 0;
+        var vuni = parseFloat($('#txtValorUni').val()) || 0;
+        if (!nome) { alert('Informe o nome da peça.'); return; }
+        if (qtd <= 0) { alert('Informe a quantidade.'); return; }
+        var vtotal = (qtd * vuni).toFixed(2);
+        $('#tblPecas tbody').append(
+            `<tr data-nome="${nome}" data-qtd="${qtd}" data-vuni="${vuni}" data-vtotal="${vtotal}">
+                <td>${nome}</td><td>${qtd}</td><td>R$ ${vuni.toFixed(2)}</td><td>R$ ${vtotal}</td>
+                <td><button class="btn btn-danger btn-sm btnRemPeca">✕</button></td>
+            </tr>`);
+        $('#txtPeca').val(''); $('#txtQtd').val(1); $('#txtValorUni').val('');
+        atualizarTotais();
+        $('#txtPeca').focus();
+    });
+
+    // Calcular total do serviço automaticamente
+    function calcularTotalServico() {
+        var tempo = parseFloat($('#txtTempo').val()) || 0;
+        var unidade = $('#selUnidadeTempo').val();
+        var valorHora = parseFloat($('#txtValorHora').val()) || 0;
+        var total = unidade === 'Hr' ? tempo * valorHora : (tempo / 60) * valorHora;
+        $('#txtTotalServico').val(total > 0 ? 'R$ ' + total.toFixed(2) : '');
+        return total;
+    }
+    $('#txtTempo, #txtValorHora').on('input', calcularTotalServico);
+    $('#selUnidadeTempo').change(calcularTotalServico);
+
+    // Adicionar serviço
+    $('#btnAddServico').click(function () {
+        var desc = $('#txtServico').val().trim();
+        var tempo = parseFloat($('#txtTempo').val()) || 0;
+        var unidade = $('#selUnidadeTempo').val();
+        var valorHora = parseFloat($('#txtValorHora').val()) || 0;
+        if (!desc) { alert('Informe a descrição do serviço.'); return; }
+        if (!tempo) { alert('Informe o tempo gasto.'); return; }
+        if (!valorHora) { alert('Informe o valor por hora.'); return; }
+        var valor = unidade === 'Hr' ? tempo * valorHora : (tempo / 60) * valorHora;
+        var tempoFormatado = tempo + ' ' + unidade;
+        $('#tblServicos tbody').append(
+            `<tr data-desc="${desc}" data-tempo="${tempoFormatado}" data-valor="${valor.toFixed(2)}">
+                <td>${desc}</td><td>${tempoFormatado}</td><td>R$ ${valor.toFixed(2)}</td>
+                <td><button class="btn btn-danger btn-sm btnRemServico">✕</button></td>
+            </tr>`);
+        $('#txtServico').val(''); $('#txtTempo').val(''); $('#txtValorHora').val(''); $('#txtTotalServico').val('');
+        atualizarTotais();
+        $('#txtServico').focus();
+    });
+
+    // Remover linha
+    $(document).on('click', '.btnRemPeca', function () { $(this).closest('tr').remove(); atualizarTotais(); });
+    $(document).on('click', '.btnRemServico', function () { $(this).closest('tr').remove(); atualizarTotais(); });
+
+    function atualizarTotais() {
+        var totalPecas = 0, totalServicos = 0;
+        $('#tblPecas tbody tr').each(function () { totalPecas += parseFloat($(this).data('vtotal')) || 0; });
+        $('#tblServicos tbody tr').each(function () { totalServicos += parseFloat($(this).data('valor')) || 0; });
+        $('#lblTotalPecas').text('R$ ' + totalPecas.toFixed(2).replace('.', ','));
+        $('#lblTotalServicos').text('R$ ' + totalServicos.toFixed(2).replace('.', ','));
+        $('#lblTotal').text('R$ ' + (totalPecas + totalServicos).toFixed(2).replace('.', ','));
+    }
+
+    var osIdGerado = 0;
+    $('#btnImprimirOS').click(function () {
+        if (osIdGerado > 0)
+            window.open('/Consulta/Imprimir?osId=' + osIdGerado, '_blank', 'width=800,height=700');
+    });
+
+    // Finalizar OS
+    $('#btnFinalizar').click(function () {
+        var pecas = [], servicos = [];
+        $('#tblPecas tbody tr').each(function () {
+            pecas.push({ nome: $(this).data('nome'), quantidade: parseInt($(this).data('qtd')), valorUnitario: parseFloat($(this).data('vuni')) });
+        });
+        $('#tblServicos tbody tr').each(function () {
+            servicos.push({ descricao: $(this).data('desc'), valor: parseFloat($(this).data('valor')), tempoGasto: $(this).data('tempo') });
+        });
+
+        var totalPecas = 0, totalServicos = 0;
+        pecas.forEach(function (p) { totalPecas += p.quantidade * p.valorUnitario; });
+        servicos.forEach(function (s) { totalServicos += s.valor; });
+
+        var payload = {
+            clienteId: parseInt($('#selCliente').val()),
+            carroId: parseInt($('#selCarro').val()),
+            dataAbertura: $('#txtData').val(),
+            kmAtual: $('#txtKm').val(),
+            pecas: pecas,
+            servicos: servicos,
+            totalPecas: totalPecas,
+            totalServicos: totalServicos
+        };
+
+        $.ajax({
+            url: '/Orcamento/Finalizar',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function (res) {
+                osIdGerado = res.osId;
+                $('#modalMensagem').text(res.mensagem);
+                new bootstrap.Modal(document.getElementById('modalSucesso')).show();
+            }
+        });
+    });
+
+    function resetarFormulario() {
+        $('#selCliente, #selCarro').val('');
+        $('#txtData').val('@DateTime.Today.ToString("yyyy-MM-dd")');
+        $('#txtKm').val('');
+        $('#tblPecas tbody, #tblServicos tbody').empty();
+        atualizarTotais();
+        $('#pnlOS').hide();
+    }
+</script>
+}

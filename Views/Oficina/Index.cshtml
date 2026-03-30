@@ -1,0 +1,96 @@
+@model OficinaWeb.Models.OficinaViewModel
+@{
+    ViewData["Title"] = "Minha Oficina";
+}
+
+<h4 class="mb-3">🏪 Dados da Oficina</h4>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="NomeFantasia" class="form-label">Nome Fantasia *</label>
+                    <input asp-for="NomeFantasia" class="form-control" />
+                    <span asp-validation-for="NomeFantasia" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="RazaoSocial" class="form-label">Razão Social</label>
+                    <input asp-for="RazaoSocial" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Cnpj" class="form-label">CNPJ *</label>
+                    <input asp-for="Cnpj" class="form-control" placeholder="00.000.000/0001-00" />
+                    <span asp-validation-for="Cnpj" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Telefone1" class="form-label">Telefone 1</label>
+                    <input asp-for="Telefone1" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Telefone2" class="form-label">Telefone 2</label>
+                    <input asp-for="Telefone2" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Cep" class="form-label">CEP</label>
+                    <div class="input-group">
+                        <input asp-for="Cep" class="form-control" id="inputCep" maxlength="9" placeholder="00000-000" />
+                        <span class="input-group-text" id="cepSpinner" style="display:none;">
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </span>
+                    </div>
+                    <small id="cepErro" class="text-danger" style="display:none;">CEP não encontrado.</small>
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="Endereco" class="form-label">Endereço</label>
+                    <input asp-for="Endereco" class="form-control" id="inputEndereco" />
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Numero" class="form-label">Número</label>
+                    <input asp-for="Numero" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Bairro" class="form-label">Bairro</label>
+                    <input asp-for="Bairro" class="form-control" id="inputBairro" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Cidade" class="form-label">Cidade</label>
+                    <input asp-for="Cidade" class="form-control" id="inputCidade" />
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $('#inputCep').on('blur', function () {
+        var cep = $(this).val().replace(/\D/g, '');
+        if (cep.length !== 8) return;
+        $('#cepErro').hide();
+        $('#cepSpinner').show();
+        fetch('https://viacep.com.br/ws/' + cep + '/json/')
+            .then(r => r.json())
+            .then(function (d) {
+                $('#cepSpinner').hide();
+                if (d.erro) { $('#cepErro').show(); return; }
+                $('#inputEndereco').val(d.logradouro);
+                $('#inputBairro').val(d.bairro);
+                $('#inputCidade').val(d.localidade);
+            })
+            .catch(function () { $('#cepSpinner').hide(); });
+    });
+
+    $('#inputCep').on('input', function () {
+        var v = $(this).val().replace(/\D/g, '');
+        if (v.length > 5) v = v.substring(0, 5) + '-' + v.substring(5, 8);
+        $(this).val(v);
+    });
+</script>
+}

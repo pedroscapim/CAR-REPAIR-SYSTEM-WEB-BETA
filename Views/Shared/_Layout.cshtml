@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Car Repair System</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body { background-color: #f4f6f9; }
+        .navbar { background-color: #1a1a2e !important; }
+        .navbar-brand, .nav-link { color: #e0e0e0 !important; }
+        .nav-link:hover { color: #ffffff !important; }
+        .sidebar { min-height: calc(100vh - 56px); background-color: #16213e; padding-top: 1rem; }
+        .sidebar .nav-link { color: #a0aec0; padding: .6rem 1rem; border-radius: 6px; margin: 2px 8px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background-color: #0f3460; color: #fff !important; }
+        .main-content { padding: 1.5rem; }
+        .card { border: none; box-shadow: 0 2px 8px rgba(0,0,0,.08); border-radius: 10px; }
+        .btn-primary { background-color: #0f3460; border-color: #0f3460; }
+        .btn-primary:hover { background-color: #1a4a8a; }
+        .badge-beta { font-size: 10px; background: #e74c3c; color: #fff; padding: 2px 6px; border-radius: 4px; vertical-align: middle; }
+    </style>
+</head>
+<body>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <nav class="navbar navbar-expand-sm navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                    🔧 Car Repair System <span class="badge-beta">BETA</span>
+                </a>
+                <div class="ms-auto d-flex align-items-center">
+                    <span class="text-light me-3">Olá, @User.Identity.Name</span>
+                    <a class="btn btn-sm btn-outline-light" asp-controller="Account" asp-action="Logout">Sair</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="d-flex">
+            <div class="sidebar" style="width:220px; min-width:220px;">
+                @{
+                    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+                    var action = ViewContext.RouteData.Values["action"]?.ToString();
+                }
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Home" && action == "Index" ? "active" : "")"
+                           asp-controller="Home" asp-action="Index">📊 Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Home" && action == "MenuPrincipal" ? "active" : "")"
+                           asp-controller="Home" asp-action="MenuPrincipal">📌 Menu Principal</a>
+                    </li>
+                    <li class="nav-item mt-2">
+                        <span class="px-3 text-secondary small">CADASTROS</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Cliente" ? "active" : "")"
+                           asp-controller="Cliente" asp-action="Index">👤 Clientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Carro" ? "active" : "")"
+                           asp-controller="Carro" asp-action="Index">🚗 Veículos</a>
+                    </li>
+                    <li class="nav-item mt-2">
+                        <span class="px-3 text-secondary small">ORDENS DE SERVIÇO</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Orcamento" ? "active" : "")"
+                           asp-controller="Orcamento" asp-action="Index">📋 Nova O.S.</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Consulta" ? "active" : "")"
+                           asp-controller="Consulta" asp-action="Index">🔍 Consultar O.S.</a>
+                    </li>
+                    <li class="nav-item mt-2">
+                        <span class="px-3 text-secondary small">CONFIGURAÇÕES</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Oficina" ? "active" : "")"
+                           asp-controller="Oficina" asp-action="Index">🏪 Minha Oficina</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="main-content flex-grow-1">
+                @if (TempData["Sucesso"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Sucesso"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @RenderBody()
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="container">
+            @RenderBody()
+        </div>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

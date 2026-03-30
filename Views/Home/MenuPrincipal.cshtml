@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "Menu Principal";
+}
+
+<h4 class="mb-4">📌 Menu Principal</h4>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <p class="text-muted small fw-semibold mb-2 text-uppercase">Cadastros</p>
+        <div class="row g-2">
+            <div class="col-6">
+                <a asp-controller="Cliente" asp-action="Criar" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#e8f4fd;">
+                        <div style="font-size:2rem;">👤</div>
+                        <div class="mt-1 small fw-semibold">Novo Cliente</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6">
+                <a asp-controller="Cliente" asp-action="Index" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#e8f4fd;">
+                        <div style="font-size:2rem;">📋</div>
+                        <div class="mt-1 small fw-semibold">Ver Clientes</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6">
+                <a asp-controller="Carro" asp-action="Criar" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#e8fdf0;">
+                        <div style="font-size:2rem;">🚗</div>
+                        <div class="mt-1 small fw-semibold">Novo Veículo</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6">
+                <a asp-controller="Carro" asp-action="Index" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#e8fdf0;">
+                        <div style="font-size:2rem;">🔍</div>
+                        <div class="mt-1 small fw-semibold">Ver Veículos</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <p class="text-muted small fw-semibold mb-2 text-uppercase">Ordens de Serviço</p>
+        <div class="row g-2">
+            <div class="col-6">
+                <a asp-controller="Orcamento" asp-action="Index" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#fdf8e8;">
+                        <div style="font-size:2rem;">📝</div>
+                        <div class="mt-1 small fw-semibold">Nova O.S.</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6">
+                <a asp-controller="Consulta" asp-action="Index" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#fdf8e8;">
+                        <div style="font-size:2rem;">🔎</div>
+                        <div class="mt-1 small fw-semibold">Consultar O.S.</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <p class="text-muted small fw-semibold mb-2 text-uppercase">Sistema</p>
+        <div class="row g-2">
+            <div class="col-6">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#f0e8fd;">
+                        <div style="font-size:2rem;">📊</div>
+                        <div class="mt-1 small fw-semibold">Dashboard</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6">
+                <a asp-controller="Oficina" asp-action="Index" class="text-decoration-none">
+                    <div class="card text-center p-3" style="background:#fde8e8;">
+                        <div style="font-size:2rem;">🏪</div>
+                        <div class="mt-1 small fw-semibold">Minha Oficina</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+@model OficinaWeb.Models.ClienteViewModel
+@{
+    ViewData["Title"] = "Novo Cliente";
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-2">← Voltar</a>
+    <h4 class="mb-0">👤 Novo Cliente</h4>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Criar" method="post">
+            <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Nome" class="form-label">Nome *</label>
+                    <input asp-for="Nome" class="form-control" />
+                    <span asp-validation-for="Nome" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Telefone" class="form-label">Telefone *</label>
+                    <input asp-for="Telefone" class="form-control" />
+                    <span asp-validation-for="Telefone" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Cep" class="form-label">CEP</label>
+                    <div class="input-group">
+                        <input asp-for="Cep" class="form-control" id="inputCep" maxlength="9" placeholder="00000-000" />
+                        <span class="input-group-text" id="cepSpinner" style="display:none;">
+                            <span class="spinner-border spinner-border-sm"></span>
+                        </span>
+                    </div>
+                    <small id="cepErro" class="text-danger" style="display:none;">CEP não encontrado.</small>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Endereco" class="form-label">Endereço</label>
+                    <input asp-for="Endereco" class="form-control" id="inputEndereco" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NumeroCasa" class="form-label">Número</label>
+                    <input asp-for="NumeroCasa" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Bairro" class="form-label">Bairro</label>
+                    <input asp-for="Bairro" class="form-control" id="inputBairro" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Complemento" class="form-label">Complemento</label>
+                    <input asp-for="Complemento" class="form-control" />
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $('#inputCep').on('blur', function () {
+        var cep = $(this).val().replace(/\D/g, '');
+        if (cep.length !== 8) return;
+        $('#cepErro').hide();
+        $('#cepSpinner').show();
+        fetch('https://viacep.com.br/ws/' + cep + '/json/')
+            .then(r => r.json())
+            .then(function (d) {
+                $('#cepSpinner').hide();
+                if (d.erro) { $('#cepErro').show(); return; }
+                $('#inputEndereco').val(d.logradouro);
+                $('#inputBairro').val(d.bairro);
+            })
+            .catch(function () { $('#cepSpinner').hide(); });
+    });
+
+    $('#inputCep').on('input', function () {
+        var v = $(this).val().replace(/\D/g, '');
+        if (v.length > 5) v = v.substring(0, 5) + '-' + v.substring(5, 8);
+        $(this).val(v);
+    });
+</script>
+}

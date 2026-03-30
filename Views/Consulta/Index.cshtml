@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Consultar Ordem de Serviço";
+}
+
+<h4 class="mb-3">🔍 Consultar Ordem de Serviço</h4>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Cliente</label>
+                <select id="selCliente" class="form-select">
+                    <option value="">Selecione...</option>
+                    @foreach (var c in (ViewBag.Clientes as List<OficinaWeb.Models.ClienteViewModel>) ?? new())
+                    {
+                        <option value="@c.Id">@c.Nome</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Veículo</label>
+                <select id="selCarro" class="form-select">
+                    <option value="">Selecione um cliente</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Data da O.S.</label>
+                <select id="selOS" class="form-select">
+                    <option value="">Selecione um veículo</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" id="btnPesquisar" class="btn btn-primary w-100">Pesquisar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resultado -->
+<div id="resultado" style="display:none;">
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">Dados da Ordem de Serviço</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>O.S. Nº:</strong> <span id="rOsId"></span></p>
+                    <p><strong>Cliente:</strong> <span id="rCliente"></span></p>
+                    <p><strong>Telefone:</strong> <span id="rTelefone"></span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Veículo:</strong> <span id="rModelo"></span> — <span id="rPlaca"></span></p>
+                    <p><strong>Data Abertura:</strong> <span id="rData"></span></p>
+                    <p><strong>KM:</strong> <span id="rKm"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header fw-semibold">🔩 Peças</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light"><tr><th>Peça</th><th>Qtd</th><th>Uni</th><th>Total</th></tr></thead>
+                        <tbody id="tblPecas"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header fw-semibold">🔧 Serviços</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light"><tr><th>Descrição</th><th>Tempo</th><th>Valor</th></tr></thead>
+                        <tbody id="tblServicos"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3"><strong>Total Peças:</strong> R$ <span id="rTotalPecas"></span></div>
+                <div class="col-md-3"><strong>Total Serviços:</strong> R$ <span id="rTotalServicos"></span></div>
+                <div class="col-md-3"><strong>Total Geral:</strong> <span class="fs-5 fw-bold text-success">R$ <span id="rTotal"></span></span></div>
+                <div class="col-md-3 text-end">
+                    <button id="btnImprimir" class="btn btn-outline-primary me-2" onclick="abrirImpressao()">🖨️ Imprimir O.S.</button>
+                    <button id="btnDeletar" class="btn btn-outline-danger" onclick="confirmarDeletar()">🗑️ Deletar O.S.</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal confirmar exclusão OS -->
+<div class="modal fade" id="modalDeletarOS" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Confirmar exclusão</h6>
+            </div>
+            <div class="modal-body">
+                Deseja excluir a <strong>O.S. Nº <span id="osIdDeletar"></span></strong>?<br/>
+                <small class="text-danger">Esta ação não pode ser desfeita.</small>
+            </div>
+            <div class="modal-footer p-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formDeletarOS" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $('#selCliente').change(function () {
+        var clienteId = $(this).val();
+        $('#selCarro').html('<option value="">Carregando...</option>');
+        $('#selOS').html('<option value="">Selecione um veículo</option>');
+        $('#resultado').hide();
+        if (!clienteId) return;
+        $.get('/Carro/ListarPorCliente?clienteId=' + clienteId, function (data) {
+            var opts = '<option value="">Selecione...</option>';
+            data.forEach(function (c) { opts += `<option value="${c.value}">${c.text}</option>`; });
+            $('#selCarro').html(opts);
+        });
+    });
+
+    $('#selCarro').change(function () {
+        var clienteId = $('#selCliente').val();
+        var carroId = $(this).val();
+        $('#selOS').html('<option value="">Carregando...</option>');
+        $('#resultado').hide();
+        if (!carroId) return;
+        $.get('/Consulta/ListarOSPorClienteECarro?clienteId=' + clienteId + '&carroId=' + carroId, function (data) {
+            var opts = '<option value="">Selecione...</option>';
+            data.forEach(function (x) { opts += `<option value="${x.value}">${x.text}</option>`; });
+            $('#selOS').html(opts);
+        });
+    });
+
+    $('#btnPesquisar').click(function () {
+        var osId = $('#selOS').val();
+        if (!osId) { alert('Selecione uma O.S.'); return; }
+        $.get('/Consulta/Detalhes?osId=' + osId, function (d) {
+            osIdAtual = d.osId;
+            $('#rOsId').text(d.osId);
+            $('#rCliente').text(d.cliente);
+            $('#rTelefone').text(d.telefone);
+            $('#rModelo').text(d.modelo);
+            $('#rPlaca').text(d.placa);
+            $('#rData').text(d.dataAbertura);
+            $('#rKm').text(d.kmAtual);
+            $('#rTotalPecas').text(parseFloat(d.totalPecas).toFixed(2));
+            $('#rTotalServicos').text(parseFloat(d.totalServicos).toFixed(2));
+            $('#rTotal').text(parseFloat(d.total).toFixed(2));
+
+            var pecasHtml = '';
+            d.pecas.forEach(function (p) {
+                pecasHtml += `<tr><td>${p.nome}</td><td>${p.qtd}</td><td>R$ ${parseFloat(p.valorUni).toFixed(2)}</td><td>R$ ${parseFloat(p.valorTotal).toFixed(2)}</td></tr>`;
+            });
+            $('#tblPecas').html(pecasHtml || '<tr><td colspan="4" class="text-muted text-center">Nenhuma peça</td></tr>');
+
+            var servicosHtml = '';
+            d.servicos.forEach(function (s) {
+                servicosHtml += `<tr><td>${s.descricao}</td><td>${s.tempo}</td><td>R$ ${parseFloat(s.valor).toFixed(2)}</td></tr>`;
+            });
+            $('#tblServicos').html(servicosHtml || '<tr><td colspan="3" class="text-muted text-center">Nenhum serviço</td></tr>');
+
+            $('#resultado').show();
+        });
+    });
+
+    var osIdAtual = 0;
+    function abrirImpressao() {
+        if (osIdAtual > 0)
+            window.open('/Consulta/Imprimir?osId=' + osIdAtual, '_blank', 'width=800,height=700');
+    }
+    function confirmarDeletar() {
+        if (osIdAtual <= 0) return;
+        document.getElementById('osIdDeletar').textContent = osIdAtual;
+        document.getElementById('formDeletarOS').action = '/Consulta/DeletarOS?osId=' + osIdAtual;
+        new bootstrap.Modal(document.getElementById('modalDeletarOS')).show();
+    }
+</script>
+}
